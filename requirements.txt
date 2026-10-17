@@ -1,8 +1,0 @@
-# Lean Instagram Reel workflow dependencies.
-# Python 3.10+ recommended.
-
-google-genai>=1.0.0     # Gemini highlight picking + captions
-faster-whisper>=1.0.0   # Local speech-to-text
-instagrapi>=2.1.0       # Instagram Reel upload
-# Optional only for links.txt mode:
-yt-dlp>=2024.10.22

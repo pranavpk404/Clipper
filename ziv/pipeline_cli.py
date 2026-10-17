@@ -10,8 +10,9 @@ import tempfile
 import time
 from pathlib import Path
 
+from . import __version__
 from .config import (AUTO_CLIP_MODE, CHANNELS_FILE, LINKS_FILE, OUTPUT_DIR, POST_HOURS,
-                      REELS_MAX_DURATION)
+                       REELS_MAX_DURATION, SUB_LANG, SUB_STYLE)
 from .core import queue as post_queue
 from .core.cleanup import delete_clip_artifacts, delete_source_artifacts
 from .core.downloader import (check_youtube_access, expand_and_download,
@@ -65,6 +66,7 @@ def build_parser(prog: str = "ziv") -> argparse.ArgumentParser:
         description="Ziv finds highlights, renders high-quality vertical clips, and posts them to Instagram.",
         epilog="Pipeline: analyze -> source captions/selected Whisper -> render -> queue -> Instagram.",
     )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument("sources", nargs="*", type=Path,
                         help="Video file(s) and/or folders")
     parser.add_argument("--clips", default="auto",
@@ -90,9 +92,9 @@ def build_parser(prog: str = "ziv") -> argparse.ArgumentParser:
                         help="Skip Gemini captions")
     parser.add_argument("--no-subs", action="store_true",
                         help="Skip burned-in subtitles and subtitle transcription")
-    parser.add_argument("--sub-style", default="hormozi",
+    parser.add_argument("--sub-style", default=SUB_STYLE,
                         help=f"Subtitle style: {', '.join(STYLES)}")
-    parser.add_argument("--sub-lang", default=None,
+    parser.add_argument("--sub-lang", default=SUB_LANG,
                         help="Force Whisper language, for example 'en'")
     parser.add_argument("--subtitle-source", choices=("auto", "source", "whisper"),
                         default=None,

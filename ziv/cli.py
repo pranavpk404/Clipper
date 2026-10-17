@@ -154,8 +154,17 @@ def _run_source(args: Sequence[str]) -> int:
 
 
 def _doctor(args: Sequence[str]) -> int:
-    if not args or args[0] != "youtube":
-        print("Usage: ziv doctor youtube [URL]", file=sys.stderr)
+    if not args or args[0] in {"dependencies", "deps"}:
+        from .doctor import run_doctor
+
+        return run_doctor()
+    if args[0] in {"--help", "help"}:
+        print("Usage: ziv doctor [dependencies|youtube [URL]]")
+        print("  dependencies  check local runtimes and optional integrations")
+        print("  youtube URL   validate cookies and probe a YouTube URL")
+        return 0
+    if args[0] != "youtube":
+        print("Usage: ziv doctor [dependencies|youtube [URL]]", file=sys.stderr)
         return 1
     from .core.downloader import check_youtube_access, youtube_auth_status
 
@@ -165,6 +174,22 @@ def _doctor(args: Sequence[str]) -> int:
     if not status["ok"]:
         return 2
     return check_youtube_access(args[1]) if len(args) > 1 else 0
+
+
+def _completion(args: Sequence[str]) -> int:
+    from .completion import SHELLS, script
+
+    if len(args) == 1 and args[0] in SHELLS:
+        print(script(args[0]), end="")
+        return 0
+    print("Usage: ziv completion bash|zsh|fish|powershell", file=sys.stderr)
+    return 1
+
+
+def _complete(args: Sequence[str]) -> int:
+    from .completion import complete_command
+
+    return complete_command(args)
 
 
 def _catalog_command(command: str, args: Sequence[str]) -> int:
@@ -185,13 +210,16 @@ def _catalog_command(command: str, args: Sequence[str]) -> int:
 def _help() -> int:
     pipeline_cli.build_parser(prog="ziv").print_help()
     print("\nZiv commands:")
-    print("  ziv                         open the terminal GUI")
+    print("  ziv                         run the normal command-line interface")
     print("  ziv add link NAME TARGET   add a named video source")
     print("  ziv add channel NAME URL   add a named YouTube channel")
     print("  ziv links|channels         list catalog entries")
     print("  ziv import                 import links.txt and channels.txt")
     print("  ziv run-source KIND NAME  run one catalog entry")
+    print("  ziv completion SHELL      print native bash/zsh/fish/PowerShell completion")
+    print("  ziv doctor                check local dependencies and install hints")
     print("  ziv doctor youtube [URL]  validate cookies or probe YouTube")
+    print("  ziv setup [--redo|--show] configure Ziv for this machine")
     print("  ziv make|parts|post        run the existing workflows")
     return 0
 
@@ -205,6 +233,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     command, rest = args[0], args[1:]
     if command == "help" or args == ["--help"]:
         return _help()
+    if command == "setup":
+        from .setup import cli as setup_cli
+
+        return setup_cli.main(rest)
+    if command == "completion":
+        return _completion(rest)
+    if command == "__complete":
+        return _complete(rest)
     catalog_result = _catalog_command(command, rest)
     if catalog_result >= 0:
         return catalog_result

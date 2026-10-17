@@ -235,7 +235,8 @@ def test_explicit_review_cli_never_posts_by_itself(tmp_path):
         post_queue.begin_upload(clips[0], state)
     assert cli.main(["--confirm-posted", str(clips[0]), "VerifiedCode"]) == 0
     assert post_queue.is_posted(clips[0], post_queue.load_queue())
-    assert not clips[0].exists()
+    # Open-source defaults retain local media; cleanup is opt-in through setup.
+    assert clips[0].exists()
 
 
 def test_corrupt_cli_queue_returns_error_without_reset(tmp_path):

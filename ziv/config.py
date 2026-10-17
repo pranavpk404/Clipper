@@ -163,6 +163,8 @@ def _env_bool(key: str, default: bool) -> bool:
 # Source captions are used whenever available; Whisper remains the fallback
 # for sources without a usable timestamped caption track.
 SUBTITLE_SOURCE = os.environ.get("SUBTITLE_SOURCE", "auto").strip().lower()
+SUB_STYLE = os.environ.get("SUB_STYLE", "hormozi").strip().lower()
+SUB_LANG = os.environ.get("SUB_LANG", "").strip() or None
 MAKE_COVERS = _env_bool("MAKE_COVERS", False)
 AUDIO_NORMALIZATION = _env_bool("AUDIO_NORMALIZATION", True)
 AUTO_CLIP_MODE = os.environ.get("AUTO_CLIP_MODE", "content").strip().lower()
@@ -170,5 +172,5 @@ AUTO_CLIP_MODE = os.environ.get("AUTO_CLIP_MODE", "content").strip().lower()
 # These are intentionally enabled for the user's disposable-media workflow.
 # Queue history and manifests are always retained; only confirmed media files
 # are eligible for removal.
-DELETE_SOURCE_AFTER_CLIP = _env_bool("DELETE_SOURCE_AFTER_CLIP", True)
-DELETE_POSTED_CLIPS = _env_bool("DELETE_POSTED_CLIPS", True)
+DELETE_SOURCE_AFTER_CLIP = _env_bool("DELETE_SOURCE_AFTER_CLIP", False)
+DELETE_POSTED_CLIPS = _env_bool("DELETE_POSTED_CLIPS", False)

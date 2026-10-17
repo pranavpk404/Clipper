@@ -9,7 +9,7 @@ from argparse import Namespace
 from dataclasses import dataclass
 from pathlib import Path
 
-from .config import AUTO_CLIP_MODE, MAKE_COVERS, SUBTITLE_SOURCE
+from .config import AUTO_CLIP_MODE, MAKE_COVERS, SUB_LANG, SUB_STYLE, SUBTITLE_SOURCE
 from .core.subtitles import STYLES
 
 
@@ -28,8 +28,8 @@ class PipelineOptions:
     dry_run: bool = False
     no_captions: bool = False
     no_subs: bool = False
-    sub_style: str = "hormozi"
-    sub_lang: str | None = None
+    sub_style: str = SUB_STYLE
+    sub_lang: str | None = SUB_LANG
     subtitle_source: str = SUBTITLE_SOURCE
     make_covers: bool = MAKE_COVERS
     profile: bool = False
@@ -56,8 +56,8 @@ class PipelineOptions:
             dry_run=args.dry_run,
             no_captions=getattr(args, "no_captions", False),
             no_subs=getattr(args, "no_subs", False),
-            sub_style=getattr(args, "sub_style", "hormozi"),
-            sub_lang=getattr(args, "sub_lang", None),
+            sub_style=getattr(args, "sub_style", SUB_STYLE),
+            sub_lang=getattr(args, "sub_lang", SUB_LANG) or SUB_LANG,
             subtitle_source=(getattr(args, "subtitle_source", None) or SUBTITLE_SOURCE),
             make_covers=(MAKE_COVERS if getattr(args, "make_covers", None) is None
                          else args.make_covers),

@@ -10,6 +10,7 @@ from pathlib import Path
 from ..core.downloader import expand_and_download, is_url
 from ..core.queue import QueueError
 from ..core.source_text import load_caption_file
+from ..config import SUB_LANG, SUB_STYLE
 from ..core.subtitles import STYLES
 from .options import PartsOptions
 from .pipeline import PartsPipeline
@@ -31,8 +32,8 @@ def build_parser(prog: str = "ziv-parts") -> argparse.ArgumentParser:
     parser.add_argument("--out", type=Path, help="Export directory (default: output/parts/SOURCE_ID)")
     parser.add_argument("--caption-file", type=Path, help="Explicit timestamped VTT/SRT evidence")
     parser.add_argument("--subtitle-source", choices=("auto", "source", "whisper"), default=None)
-    parser.add_argument("--sub-style", choices=tuple(STYLES), default="hormozi")
-    parser.add_argument("--sub-lang", help="Whisper language, for example en")
+    parser.add_argument("--sub-style", choices=tuple(STYLES), default=SUB_STYLE)
+    parser.add_argument("--sub-lang", default=SUB_LANG, help="Whisper language, for example en")
     parser.add_argument("--no-subs", action="store_true", help="Export without burned-in subtitles")
     parser.add_argument("--labels", action="store_true", help="Burn a Part N / Total label into the upper padding")
     parser.add_argument("--dry-run", action="store_true", help="Save story_plan.json without rendering")

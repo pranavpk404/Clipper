@@ -6,6 +6,7 @@ cookies.txt
 # Local application state (including state left by older releases)
 .*-state/
 __agent__/
+.omnirush/
 
 # Local agent/AI handoff instructions and context
 /AGENTS.md
@@ -31,3 +32,4 @@ dist/
 *.lock
 *.channels.lock
 *.post.lock
+!uv.lock

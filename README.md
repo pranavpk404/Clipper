@@ -94,45 +94,74 @@ still support ten good clips from a source over several make/post runs.
 
 ## Requirements
 
-- Python 3.10+
-- FFmpeg and FFprobe on `PATH`
-- Gemini API key
-- Instagram username and password for posting
-- yt-dlp when discovering channels or processing video URLs in either workflow
+- Python 3.10+ (3.11 is pinned for the repository development environment)
+- FFmpeg and FFprobe on `PATH` for rendering
+- Gemini is configured by `ziv setup` when AI selection is needed
+- yt-dlp is installed by the `download` or `all` extra for YouTube links
+- Instagram is optional and installed by the `instagram` or `all` extra
 
-Install FFmpeg on Debian/Ubuntu:
+Ziv does not assume one Linux distribution and never runs a package manager
+for you. `ziv doctor` detects the host and prints a suitable hint for Debian,
+Arch, Fedora, openSUSE, Nix, macOS, Windows, or an unknown system.
+
+Examples of the system dependency step:
+
+```text
+Debian/Ubuntu:  sudo apt install ffmpeg python3 python3-venv
+Arch:          sudo pacman -S ffmpeg python python-pip
+Fedora:        sudo dnf install ffmpeg python3 python3-pip
+openSUSE:      sudo zypper install ffmpeg python311 python311-pip
+Nix:           nix develop
+macOS:         brew install ffmpeg python
+```
+
+## Install and first-run setup
+
+The recommended reproducible path uses `uv`:
 
 ```bash
-sudo apt install ffmpeg python3 python3-venv
+uv sync --extra all
+uv run ziv setup
 ```
 
-On Windows:
-
-```powershell
-winget install ffmpeg
-```
-
-## Setup
+The standard virtual-environment path is also supported:
 
 ```bash
 python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python -m pip install -e .
-cp .env.example .env
+.venv/bin/python -m pip install -e '.[all]'
+.venv/bin/ziv setup
 ```
 
-Set these values in `.env`:
+`ziv setup` asks for the complete local configuration in one pass:
 
-```dotenv
-GEMINI_API_KEY=your_gemini_key
-IG_USERNAME=your_instagram_username
-IG_PASSWORD=your_instagram_password
+- adaptive hardware profile and the exact settings it will apply
+- Gemini key, model, fallbacks, pacing, and selection budgets
+- anonymous, browser-cookie, or external YouTube cookie-file access
+- Whisper, subtitle, quality, paths, queue, posting, and cleanup settings
+- optional Instagram username, hidden password, and 2FA code
+
+The **recommended** profile is selected by default from detected CPU threads,
+RAM, GPU hints, and FFmpeg capabilities. The wizard prints the full proposed
+configuration before saving. It does not install packages, read cookie
+contents, automate login/CAPTCHA, or upload anything.
+If a GPU or hardware-acceleration backend is detected, Ziv reports it but keeps
+the CPU renderer unless that backend is explicitly supported by the active
+pipeline; it will not claim GPU acceleration that it does not use.
+
+Useful setup commands:
+
+```bash
+ziv setup                 # complete interactive setup
+ziv setup --redo          # run it again
+ziv setup --show          # show settings with secrets redacted
+ziv setup --non-interactive --profile adaptive
+ziv doctor                # local dependencies and platform hints
 ```
 
-The first Instagram login caches `.ig_session`. If Instagram requests a
-verification code, set `IG_2FA_CODE` or enter it interactively.
-
-Never commit `.env` or `.ig_session`.
+For CI or headless machines, use `ZIV_SETUP_*` environment variables or
+repeated `--set KEY=VALUE` options. Installation itself never prompts.
+`.env` is written atomically with owner-only permissions where supported.
+Never commit `.env`, `.ig_session`, cookie files, or `.ziv-state`.
 
 ## Ziv command and launcher
 
@@ -148,6 +177,7 @@ The public command is `ziv`. The one canonical Linux launcher is `ziv.sh`:
 ./ziv.sh links                   # list links and statuses
 ./ziv.sh channels                # list channels and statuses
 ./ziv.sh doctor youtube          # validate local cookie configuration
+./ziv.sh completion bash         # generate shell completion
 ./ziv.sh post                    # post the queue now
 ./ziv.sh post --due              # post only when the schedule allows
 ./ziv.sh source                  # scan configured channels
@@ -550,18 +580,40 @@ cookies should come from the same browser/IP session that passed any CAPTCHA.
 Fast offline checks:
 
 ```bash
-.venv/bin/python -m pytest -q
+make test
 ```
+
+`make test` runs the checked-in suite without installing packages or contacting
+the network. Set `PYTHON=/path/to/python` when using a different environment.
+
+The `tests/` directory is source-repository code for contributors and CI. It
+is intentionally not included in the built runtime wheel or sdist.
 
 The optional synthetic FFmpeg tests verify single-window clips and multi-range
 story-part assembly, including subtitles, labels, audio, and render resume:
 
 ```bash
-.venv/bin/python -m pytest -q --run-integration
+uv run pytest -q --run-integration
 ```
 
 A real Instagram upload requires credentials and network access and is not run
 by the test suite.
+
+## Open-source development
+
+Ziv is MIT-licensed. The repository includes contributor, security, and code
+of conduct policies. Pull requests should keep the default test suite offline
+and must not include credentials, browser cookies, generated media, or local
+state. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
+
+Shell completion is available without an extra dependency:
+
+```bash
+eval "$(ziv completion bash)"       # Bash
+eval "$(ziv completion zsh)"        # Zsh
+ziv completion fish | source        # Fish
+ziv completion powershell           # PowerShell output
+```
 
 ## Project layout
 
@@ -581,15 +633,5 @@ by the test suite.
 - `ziv/platforms/instagram.py` - login and Reel upload
 - `ziv.sh` - the one canonical Linux CLI launcher
 - `ziv/` - the sole application package
-
-## Recovery copy
-
-Before the selective framing/resume work, a sanitized code backup was created
-at:
-
-```text
-/pranav/Projects/clipping_pre_smartcrop_backup_sanitized_20261002_192017.tar.gz
-```
-
-It excludes `.env`, `.ig_session`, `.venv`, and generated output. Keep those
-local files backed up separately if you need to preserve credentials or media.
+- `flake.nix` - optional Nix development shell with Python, uv, and FFmpeg
+- `.github/workflows/tests.yml` - native GitHub Actions checks without Docker

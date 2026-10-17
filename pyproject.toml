@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools==80.9.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,24 +8,43 @@ version = "1.0.0"
 description = "Ziv: terminal-first video clipping and Instagram Reel workflows"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "Proprietary" }
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Ziv contributors" }]
 keywords = ["ziv", "video", "instagram", "reels", "subtitles", "gemini", "ffmpeg"]
 classifiers = [
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Multimedia :: Video",
 ]
-dependencies = [
+
+[project.urls]
+Homepage = "https://github.com/pranavpk404/Clipper"
+Issues = "https://github.com/pranavpk404/Clipper/issues"
+Repository = "https://github.com/pranavpk404/Clipper"
+
+[project.optional-dependencies]
+core = [
     "google-genai>=1.0.0",
     "faster-whisper>=1.0.0",
 ]
-
-[project.optional-dependencies]
-instagram = ["instagrapi>=2.1.0"]
 download = ["yt-dlp>=2024.10.22"]
-all = ["instagrapi>=2.1.0", "yt-dlp>=2024.10.22"]
+instagram = ["instagrapi>=2.1.0"]
+all = [
+    "google-genai>=1.0.0",
+    "faster-whisper>=1.0.0",
+    "yt-dlp>=2024.10.22",
+    "instagrapi>=2.1.0",
+]
+dev = [
+    "build>=1.2.2",
+    "check-wheel-contents>=0.6.0",
+    "pytest>=8.0",
+    "twine>=5.1.1",
+]
 
 [project.scripts]
 ziv = "ziv.cli:main"
@@ -33,6 +52,8 @@ ziv-parts = "ziv.parts_cli:main"
 
 [tool.setuptools.packages.find]
 include = ["ziv*"]
+exclude = ["tests", "tests.*", "ziv.tests", "ziv.tests.*"]
+namespaces = false
 
 [tool.setuptools.package-data]
 "ziv.parts" = ["README.md"]
